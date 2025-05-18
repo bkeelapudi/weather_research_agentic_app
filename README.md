@@ -19,6 +19,7 @@ Reference: [ https://aws.amazon.com/blogs/opensource/introducing-strands-agents-
   - Weather Research Assistant: Analyzes weather data for California cities
   - Travel Advisor: Makes recommendations based on weather conditions
   - Coordinator: Synthesizes information and provides final recommendations
+ 
 - Fetches real-time weather data and forecasts from OpenWeather API
 - Analyzes weather patterns for major California cities
 - Provides detailed recommendations with reasoning
