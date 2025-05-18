@@ -19,7 +19,7 @@ A multi-agent application that helps you find the best weather in California for
 pip install -r requirements.txt
 ```
 
-2. Configure your OpenWeather API key in `.env`:
+2. Configure your API key in `.env`:
 ```
 OPENWEATHER_API_KEY=your_api_key_here
 ```

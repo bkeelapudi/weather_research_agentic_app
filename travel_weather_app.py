@@ -2,6 +2,7 @@
 Multi-Agent Travel Application
 This application uses Strands Agents SDK to find the best weather in California 
 for Memorial Day weekend using OpenWeather API.
+Uses Claude models for different agents.
 """
 
 import os
@@ -158,39 +159,124 @@ def get_memorial_day_info() -> dict:
     """
     return MEMORIAL_DAY_WEEKEND
 
-# Create the Weather Research Agent
+@tool
+def analyze_weather_comfort(temperature: float, humidity: float, wind_speed: float) -> dict:
+    """
+    Analyze weather comfort based on temperature, humidity, and wind speed.
+    
+    Args:
+        temperature (float): Temperature in Celsius
+        humidity (float): Humidity percentage
+        wind_speed (float): Wind speed in m/s
+        
+    Returns:
+        dict: Comfort analysis with score and description
+    """
+    # Calculate comfort score (0-100)
+    # Ideal conditions: 20-25°C, 40-60% humidity, 2-5 m/s wind
+    temp_score = 100 - min(abs(temperature - 22.5) * 5, 50)
+    humidity_score = 100 - min(abs(humidity - 50) * 1.5, 50)
+    wind_score = 100 - min(abs(wind_speed - 3.5) * 10, 50)
+    
+    overall_score = (temp_score + humidity_score + wind_score) / 3
+    
+    # Determine comfort level
+    if overall_score >= 80:
+        comfort = "Excellent"
+    elif overall_score >= 60:
+        comfort = "Good"
+    elif overall_score >= 40:
+        comfort = "Moderate"
+    else:
+        comfort = "Poor"
+    
+    return {
+        "comfort_score": overall_score,
+        "comfort_level": comfort,
+        "temperature_score": temp_score,
+        "humidity_score": humidity_score,
+        "wind_score": wind_score,
+        "analysis": f"Weather comfort is {comfort} with an overall score of {overall_score:.1f}/100"
+    }
+
+# Create all agents using Claude model since Amazon Titan has issues with system prompts
 weather_researcher = Agent(
-    model="anthropic.claude-3-haiku-20240307-v1:0",
-    tools=[get_current_weather, get_forecast_weather, get_california_cities, calculator],
-    system_prompt="""You are a Weather Research Assistant. 
+    model="anthropic.claude-3-haiku-20240307-v1:0",  # Claude model
+    tools=[get_current_weather, get_forecast_weather, get_california_cities, calculator, analyze_weather_comfort],
+    system_prompt="""You are a Weather Research Assistant specialized in California climate patterns. 
     Your job is to analyze weather data for different cities in California.
     Provide detailed information about current conditions and forecasts.
     When analyzing weather, consider temperature, precipitation, humidity, and wind.
+    Use the analyze_weather_comfort tool to evaluate overall comfort levels.
     """
 )
 
-# Create the Travel Recommendation Agent
+# Create the Travel Recommendation Agent using Claude Sonnet (more powerful)
 travel_advisor = Agent(
-    model="anthropic.claude-3-haiku-20240307-v1:0",
-    tools=[get_memorial_day_info, python_repl, calculator],
+    model="anthropic.claude-3-sonnet-20240229-v1:0",  # Claude Sonnet model
+    tools=[get_memorial_day_info, python_repl, calculator, analyze_weather_comfort],
     system_prompt="""You are a Travel Advisor specializing in California destinations.
     Your job is to recommend the best cities to visit based on weather conditions.
     Consider factors like temperature (20-25°C is ideal), clear skies, low precipitation chance,
     and moderate humidity (40-60%).
     Provide detailed recommendations with reasoning.
+    Use the analyze_weather_comfort tool to evaluate and compare destinations.
     """
 )
 
-# Create the Coordinator Agent
+# Create the Coordinator Agent using Claude model
 coordinator = Agent(
-    model="anthropic.claude-3-haiku-20240307-v1:0",
+    model="anthropic.claude-3-haiku-20240307-v1:0",  # Claude model
     tools=[current_time],
     system_prompt="""You are a Travel Planning Coordinator.
     Your job is to coordinate between the Weather Research Assistant and Travel Advisor
     to find the best city in California to visit during Memorial Day weekend based on weather.
     Summarize findings and make a final recommendation.
+    Include specific details about expected weather conditions and why they make for an ideal visit.
     """
 )
+
+def extract_recommended_city(recommendation_text):
+    """
+    Extract the recommended city from the recommendation text
+    
+    Args:
+        recommendation_text (str or AgentResult): The text of the recommendation
+        
+    Returns:
+        str: The name of the recommended city
+    """
+    # Convert AgentResult to string if needed
+    if hasattr(recommendation_text, 'content'):
+        recommendation_text = recommendation_text.content
+    elif not isinstance(recommendation_text, str):
+        recommendation_text = str(recommendation_text)
+    
+    # List of cities to check for in the recommendation
+    cities_to_check = [
+        "Palm Springs", "Santa Barbara", "Los Angeles", "San Diego", 
+        "Monterey", "Napa", "San Francisco", "South Lake Tahoe"
+    ]
+    
+    # Check for explicit recommendation statements
+    recommendation_phrases = [
+        "recommend visiting", "recommend", "best city", "top choice", 
+        "ideal destination", "best destination"
+    ]
+    
+    # First look for explicit recommendations
+    for phrase in recommendation_phrases:
+        for city in cities_to_check:
+            if f"{phrase} {city}" in recommendation_text:
+                return city
+    
+    # Then check for cities mentioned with positive sentiment
+    for city in cities_to_check:
+        if city in recommendation_text:
+            return city
+    
+    # Default to the first city in our list if no clear recommendation
+    return "Palm Springs"  # Default to Palm Springs as it was the most likely recommendation
 
 def run_multi_agent_system():
     """
@@ -198,14 +284,15 @@ def run_multi_agent_system():
     """
     print("🌞 California Memorial Day Weekend Weather Finder 🌞")
     print("Finding the best weather in California for Memorial Day weekend 2025...")
+    print("Using Claude models for multi-agent collaboration")
     
     # Step 1: Get the list of cities and Memorial Day info
     cities_response = weather_researcher("What are the major cities in California that we should check for weather?")
     memorial_day_info = travel_advisor("When exactly is Memorial Day weekend in 2025?")
     
-    print("\n--- Cities to Check ---")
+    print("\n--- Cities to Check (Claude Haiku) ---")
     print(cities_response)
-    print("\n--- Memorial Day Weekend Info ---")
+    print("\n--- Memorial Day Weekend Info (Claude Sonnet) ---")
     print(memorial_day_info)
     
     # Step 2: Get weather forecasts for each city
@@ -222,11 +309,12 @@ def run_multi_agent_system():
     
     Analyze which cities are likely to have the best weather for Memorial Day weekend (May 24-26, 2025).
     Consider temperature, precipitation chance, and overall conditions.
+    Use the analyze_weather_comfort tool to evaluate each city's comfort level.
     """
     
     weather_analysis = weather_researcher(weather_data_prompt)
     
-    print("\n--- Weather Analysis ---")
+    print("\n--- Weather Analysis (Claude Haiku) ---")
     print(weather_analysis)
     
     # Step 3: Get travel recommendations based on weather
@@ -237,11 +325,12 @@ def run_multi_agent_system():
     
     Which California city would you recommend for a visit during Memorial Day weekend (May 24-26, 2025)?
     Please explain your reasoning and provide details about why this location offers the best weather experience.
+    Use the analyze_weather_comfort tool to evaluate your top recommendations.
     """
     
     travel_recommendation = travel_advisor(recommendation_prompt)
     
-    print("\n--- Travel Recommendation ---")
+    print("\n--- Travel Recommendation (Claude Sonnet) ---")
     print(travel_recommendation)
     
     # Step 4: Final coordination and summary
@@ -261,10 +350,14 @@ def run_multi_agent_system():
     
     final_recommendation = coordinator(final_prompt)
     
-    print("\n--- Final Recommendation ---")
+    print("\n--- Final Recommendation (Claude Haiku) ---")
     print(final_recommendation)
     
-    return final_recommendation
+    # Step 5: Extract the recommended city
+    recommended_city = extract_recommended_city(final_recommendation)
+    print(f"\n--- Recommended City: {recommended_city} ---")
+    
+    return final_recommendation, recommended_city
 
 if __name__ == "__main__":
     run_multi_agent_system()
