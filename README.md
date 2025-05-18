@@ -4,7 +4,7 @@ Multi-Agent Travel Application
 - Uses Claude models for different agents.
 - This application was built with the help of Amazon Q CLI and uses Amazon Bedrock Models.
 
-  ![]()
+  ![agentic-loop](agentic-loop.png)
 
 ## Features
 
