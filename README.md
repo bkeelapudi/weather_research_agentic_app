@@ -1,25 +1,13 @@
-
-
 # California Weather Travel Planner
-  ![California_Memorial_Day_Weekend_Weather_Finder](California_Memorial_Day_Weekend_Weather_Finder.png)
 
-Multi-Agent Travel Application 
-- This application uses Strands Agents SDK to find the best weather in California for Memorial Day weekend using OpenWeather API.
-- Uses Claude models for different agents.
-- This application was built with the help of Amazon Q Developer CLI and uses Amazon Bedrock Models.
-
-
+A multi-agent application that helps you find the best weather in California for Memorial Day weekend using the Strands Agents SDK and OpenWeather API.
 
 ## Features
-![agentic-loop](agentic-loop.png)
-
-Reference: [ https://aws.amazon.com/blogs/opensource/introducing-strands-agents-an-open-source-ai-agents-sdk/ ]
 
 - Uses multiple specialized AI agents working together:
   - Weather Research Assistant: Analyzes weather data for California cities
   - Travel Advisor: Makes recommendations based on weather conditions
   - Coordinator: Synthesizes information and provides final recommendations
- 
 - Fetches real-time weather data and forecasts from OpenWeather API
 - Analyzes weather patterns for major California cities
 - Provides detailed recommendations with reasoning

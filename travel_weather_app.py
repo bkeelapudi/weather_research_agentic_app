@@ -236,6 +236,8 @@ coordinator = Agent(
     """
 )
 
+import re
+
 def extract_recommended_city(recommendation_text):
     """
     Extract the recommended city from the recommendation text
@@ -258,19 +260,38 @@ def extract_recommended_city(recommendation_text):
         "Monterey", "Napa", "San Francisco", "South Lake Tahoe"
     ]
     
-    # Check for explicit recommendation statements
-    recommendation_phrases = [
-        "recommend visiting", "recommend", "best city", "top choice", 
-        "ideal destination", "best destination"
+    # Check for explicit recommendation statements with stronger indicators
+    strong_recommendation_phrases = [
+        "final recommendation is", "we recommend", "I recommend", 
+        "best city is", "top choice is", "recommend visiting", 
+        "ideal destination is", "best destination is"
     ]
     
-    # First look for explicit recommendations
-    for phrase in recommendation_phrases:
+    # First look for strong explicit recommendations
+    for phrase in strong_recommendation_phrases:
         for city in cities_to_check:
-            if f"{phrase} {city}" in recommendation_text:
+            pattern = f"{phrase}.*{city}"
+            if re.search(pattern, recommendation_text, re.IGNORECASE):
                 return city
     
     # Then check for cities mentioned with positive sentiment
+    positive_phrases = [
+        "excellent weather", "ideal conditions", "perfect weather",
+        "best weather", "highest comfort score", "most comfortable"
+    ]
+    
+    for phrase in positive_phrases:
+        for city in cities_to_check:
+            if f"{city}.*{phrase}" in recommendation_text or f"{phrase}.*{city}" in recommendation_text:
+                return city
+    
+    # Check for cities mentioned at the beginning of sentences (likely more important)
+    for city in cities_to_check:
+        pattern = f"[.!?]\s+{city}"
+        if re.search(pattern, recommendation_text) or recommendation_text.startswith(city):
+            return city
+    
+    # If no strong recommendation found, check for any mention of cities
     for city in cities_to_check:
         if city in recommendation_text:
             return city
