@@ -320,4 +320,4 @@ with tab3:
 
 # Footer
 st.markdown("---")
-st.markdown("© 2025 California Weather Travel Planner | Powered by Strands Agents SDK and OpenWeather API")
+st.markdown("2025 California Weather Travel Planner | Powered by Strands Agents SDK and OpenWeather API")
