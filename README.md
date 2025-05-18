@@ -8,10 +8,12 @@ Multi-Agent Travel Application
 - Uses Claude models for different agents.
 - This application was built with the help of Amazon Q Developer CLI and uses Amazon Bedrock Models.
 
-Reference: [ https://aws.amazon.com/blogs/opensource/introducing-strands-agents-an-open-source-ai-agents-sdk/ ]
+
 
 ## Features
 ![agentic-loop](agentic-loop.png)
+
+Reference: [ https://aws.amazon.com/blogs/opensource/introducing-strands-agents-an-open-source-ai-agents-sdk/ ]
 
 - Uses multiple specialized AI agents working together:
   - Weather Research Assistant: Analyzes weather data for California cities
