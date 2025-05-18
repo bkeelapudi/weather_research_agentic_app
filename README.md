@@ -5,6 +5,8 @@ A multi-agent application that helps you find the best weather in California for
 ![California_Memorial_Day_Weekend_Weather_Finder](California_Memorial_Day_Weekend_Weather_Finder.png)
 
 ## Features
+![agentic-loop](agentic-loop.png)
+reference: [Introducing Strands Agents, an Open Source AI Agents SDK](https://aws.amazon.com/blogs/opensource/introducing-strands-agents-an-open-source-ai-agents-sdk/)
 
 - Uses multiple specialized AI agents working together:
   - Weather Research Assistant: Analyzes weather data for California cities
