@@ -4,6 +4,8 @@ A multi-agent application that helps you find the best weather in California for
 
 Agents with Strands Agents SDK : https://strandsagents.com/0.1.x/user-guide/quickstart/
 
+[<img src="California_Memorial_Day_Weekend_Weather_Finder.png" width="50%">](https://youtu.be/Vr3Bs_VZSTk "Agents with Strands Agents SDK")
+
 ![California_Memorial_Day_Weekend_Weather_Finder](California_Memorial_Day_Weekend_Weather_Finder.png)
 
 ## Features
