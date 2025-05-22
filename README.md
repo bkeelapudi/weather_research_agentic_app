@@ -27,7 +27,7 @@ OPENWEATHER_API_KEY=your_api_key_here
 
 3. Run the application:
 ```bash
-python travel_weather_app.py
+streamlit run app.py --server.headless true
 ```
 
 ## How It Works
