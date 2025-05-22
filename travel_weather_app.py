@@ -199,7 +199,7 @@ def analyze_weather_comfort(temperature: float, humidity: float, wind_speed: flo
         "analysis": f"Weather comfort is {comfort} with an overall score of {overall_score:.1f}/100"
     }
 
-# Create all agents using Claude model since Amazon Titan has issues with system prompts
+# Create all agents using Claude model
 weather_researcher = Agent(
     model="anthropic.claude-3-haiku-20240307-v1:0",  # Claude model
     tools=[get_current_weather, get_forecast_weather, get_california_cities, calculator, analyze_weather_comfort],
