@@ -6,8 +6,6 @@ Agents with Strands Agents SDK : https://strandsagents.com/0.1.x/user-guide/quic
 
 [<img src="California_Memorial_Day_Weekend_Weather_Finder.png" width="50%">](https://youtu.be/Vr3Bs_VZSTk "Agents with Strands Agents SDK")
 
-![California_Memorial_Day_Weekend_Weather_Finder](California_Memorial_Day_Weekend_Weather_Finder.png)
-
 ## Features
 - Uses multiple specialized AI agents working together:
   - Weather Research Assistant: Analyzes weather data for California cities
