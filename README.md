@@ -2,6 +2,8 @@
 
 A multi-agent application that helps you find the best weather in California for Memorial Day weekend using the Strands Agents SDK and OpenWeather API.
 
+Agents with Strands Agents SDK : https://strandsagents.com/0.1.x/user-guide/quickstart/
+
 ![California_Memorial_Day_Weekend_Weather_Finder](California_Memorial_Day_Weekend_Weather_Finder.png)
 
 ## Features
