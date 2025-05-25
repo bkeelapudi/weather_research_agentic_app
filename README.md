@@ -1,45 +1,109 @@
-# California Weather Travel Planner
+# US State Memorial Day Weather Finder
 
-A multi-agent application that helps you find the best weather in California for Memorial Day weekend using the Strands Agents SDK and OpenWeather API.
+A multi-agent application that finds the best weather in any US state for Memorial Day weekend using the Strands Agents SDK, Amazon Bedrock Claude models, and OpenWeather API.
 
-Agents with Strands Agents SDK : https://strandsagents.com/0.1.x/user-guide/quickstart/
+## Overview
 
-[<img src="California_Memorial_Day_Weekend_Weather_Finder.png" width="50%">](https://youtu.be/Vr3Bs_VZSTk "Agents with Strands Agents SDK")
+This application uses a system of three specialized AI agents powered by Amazon Bedrock Claude models to analyze weather data and provide travel recommendations for Memorial Day weekend in any US state. The agents collaborate to determine which city is likely to have the most pleasant weather conditions during the holiday weekend.
 
 ## Features
-- Uses multiple specialized AI agents working together:
-  - Weather Research Assistant: Analyzes weather data for California cities
-  - Travel Advisor: Makes recommendations based on weather conditions
-  - Coordinator: Synthesizes information and provides final recommendations
-- Fetches real-time weather data and forecasts from OpenWeather API
-- Analyzes weather patterns for major California cities
-- Provides detailed recommendations with reasoning
 
-## Setup
+- Retrieves current weather and 5-day forecasts for major cities in any US state
+- Analyzes weather comfort based on temperature, humidity, and wind speed
+- Provides detailed weather analysis for Memorial Day weekend
+- Generates travel recommendations with reasoning
+- Delivers a final coordinated recommendation for the best city to visit
 
-1. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+## Agent System Architecture
 
-2. Configure your API key in `.env`:
-```
-OPENWEATHER_API_KEY=your_api_key_here
-```
+The application uses three specialized agents:
 
-3. Run the application:
-```bash
-streamlit run app.py --server.headless true
-```
+1. **Weather Researcher Agent (Amazon Bedrock Claude Haiku)**
+   - Analyzes weather data for different cities in the selected state
+   - Provides detailed information about current conditions and forecasts
+   - Evaluates weather comfort levels
 
-## How It Works
+2. **Travel Advisor Agent (Amazon Bedrock Claude Sonnet)**
+   - Recommends cities based on weather conditions
+   - Considers factors like temperature, precipitation, and humidity
+   - Provides detailed recommendations with reasoning
 
-1. The Weather Research Assistant gathers weather data for major California cities
-2. The Travel Advisor analyzes this data to determine ideal destinations
-3. The Coordinator synthesizes the information and provides a final recommendation
+3. **Coordinator Agent (Amazon Bedrock Claude Haiku)**
+   - Coordinates between the Weather Researcher and Travel Advisor
+   - Summarizes findings and makes a final recommendation
+   - Includes specific details about expected weather conditions
 
 ## Requirements
 
-- Python 3.8+
-- OpenWeather API key (free tier works fine)
-- Internet connection to access weather data
+- Python 3.6+
+- Strands Agents SDK
+- OpenWeather API key
+- AWS credentials configured for Amazon Bedrock access
+- Streamlit (for web interface)
+
+## Setup
+
+1. Clone the repository
+2. Install dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
+3. Create a `.env` file with your API keys:
+   ```
+   OPENWEATHER_API_KEY=your_openweather_api_key
+   ```
+4. Configure AWS credentials for Bedrock access:
+   ```
+   aws configure
+   ```
+5. Ensure you have access to Claude models in Amazon Bedrock:
+   - Go to the AWS Bedrock console
+   - Navigate to "Model access"
+   - Request access to `anthropic.claude-3-haiku-20240307-v1` and `anthropic.claude-3-sonnet-20240229-v1`
+
+## Usage
+
+### Command Line Interface
+
+Run the command-line application:
+
+```
+python travel_weather_app.py
+```
+
+You'll be prompted to enter a US state to analyze. The application will:
+1. Identify major cities in the selected state
+2. Determine Memorial Day weekend dates
+3. Collect and analyze weather forecasts for each city
+4. Generate travel recommendations based on weather data
+5. Provide a final recommendation for the best city to visit
+
+### Web Interface
+
+Run the Streamlit web application:
+
+```
+streamlit run app.py
+```
+
+The web interface allows you to:
+1. Select any US state from a dropdown menu
+2. Run the multi-agent analysis with a single click
+3. View detailed weather analysis and recommendations
+4. Compare weather conditions between multiple cities
+5. See visualizations of temperature and comfort scores
+
+## Tools
+
+The application includes several custom tools:
+
+- `get_current_weather`: Retrieves current weather for a specified city in any state
+- `get_forecast_weather`: Gets 5-day weather forecast for a city
+- `get_us_states`: Returns a list of all US states
+- `get_cities_by_state`: Returns a list of major cities in a specified state
+- `get_memorial_day_info`: Provides Memorial Day weekend dates
+- `analyze_weather_comfort`: Evaluates weather comfort based on temperature, humidity, and wind
+
+## License
+
+[MIT License](LICENSE)

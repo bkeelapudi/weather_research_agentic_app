@@ -1,7 +1,7 @@
 """
-California Weather Travel Planner - Streamlit Web UI
-This application uses Strands Agents SDK to find the best weather in California 
-for Memorial Day weekend using OpenWeather API.
+US State Weather Travel Planner - Streamlit Web UI
+This application uses Strands Agents SDK to find the best weather in any US state
+for Memorial Day weekend using OpenWeather API and Amazon Bedrock models.
 """
 
 import streamlit as st
@@ -17,13 +17,15 @@ import re
 from travel_weather_app import (
     get_current_weather, 
     get_forecast_weather, 
-    get_california_cities, 
+    get_us_states,
+    get_cities_by_state,
     get_memorial_day_info,
     analyze_weather_comfort,
     weather_researcher,
     travel_advisor,
     coordinator,
-    extract_recommended_city
+    extract_recommended_city,
+    run_multi_agent_system
 )
 
 # Load environment variables
@@ -31,36 +33,40 @@ load_dotenv()
 
 # Page configuration
 st.set_page_config(
-    page_title="California Weather Travel Planner",
+    page_title="US State Weather Travel Planner",
     page_icon="🌞",
     layout="wide"
 )
 
 # Header
-st.title("🌞 California Memorial Day Weekend Weather Finder")
-st.markdown("Find the best weather in California for Memorial Day weekend using AI agents")
+st.title("🌞 US State Memorial Day Weekend Weather Finder")
+st.markdown("Find the best weather in any US state for Memorial Day weekend using AI agents")
 
 # Sidebar
 st.sidebar.title("About")
 st.sidebar.info(
     "This application uses multiple AI agents to analyze weather data "
-    "and recommend the best city in California to visit during Memorial Day weekend. "
+    "and recommend the best city in any US state to visit during Memorial Day weekend. "
     "The agents work together to provide detailed analysis and recommendations."
 )
 
 st.sidebar.title("Agents")
 st.sidebar.markdown("""
-- **Weather Research Assistant**: Analyzes weather data for California cities
-- **Travel Advisor**: Makes recommendations based on weather conditions
-- **Coordinator**: Synthesizes information and provides final recommendations
+- **Weather Research Assistant**: Analyzes weather data for cities in the selected state (Amazon Bedrock Claude Haiku)
+- **Travel Advisor**: Makes recommendations based on weather conditions (Amazon Bedrock Claude Sonnet)
+- **Coordinator**: Synthesizes information and provides final recommendations (Amazon Bedrock Claude Haiku)
 """)
 
 # Main content
 tab1, tab2, tab3 = st.tabs(["Run Analysis", "City Comparison", "About"])
 
 with tab1:
-    st.header("Find the Best Weather in California")
-    st.markdown("Click the button below to run the multi-agent analysis and find the best city to visit during Memorial Day weekend.")
+    st.header("Find the Best Weather in Your Selected State")
+    st.markdown("Select a US state and click the button to run the multi-agent analysis and find the best city to visit during Memorial Day weekend.")
+    
+    # State selection
+    all_states = get_us_states()
+    selected_state = st.selectbox("Select a US State", all_states, index=all_states.index("California") if "California" in all_states else 0)
     
     # Year selection
     year = st.selectbox("Select Year", [2025, 2026, 2027], index=0)
@@ -72,9 +78,9 @@ with tab1:
         status_text = st.empty()
         
         # Step 1: Get cities and Memorial Day info
-        status_text.text("Getting California cities...")
+        status_text.text(f"Getting cities in {selected_state}...")
         progress_bar.progress(10)
-        cities = get_california_cities()
+        cities = get_cities_by_state(selected_state)
         
         status_text.text("Getting Memorial Day weekend dates...")
         progress_bar.progress(20)
@@ -86,23 +92,22 @@ with tab1:
         st.write(f"End Date: {memorial_day_info['end_date']}")
         
         # Step 2: Weather analysis
-        status_text.text("Analyzing weather data for California cities...")
+        status_text.text(f"Analyzing weather data for {selected_state} cities...")
         progress_bar.progress(30)
         
         # Create a placeholder for the weather analysis
         weather_analysis_placeholder = st.empty()
         
+        # Select a subset of cities if there are too many
+        if len(cities) > 8:
+            selected_cities = cities[:8]  # Take the first 8 cities
+        else:
+            selected_cities = cities
+        
         # Simulate the weather analysis process
-        weather_data_prompt = """
-        Please check the weather forecasts for these California cities:
-        - San Francisco
-        - Los Angeles
-        - San Diego
-        - Santa Barbara
-        - Monterey
-        - Palm Springs
-        - South Lake Tahoe
-        - Napa
+        weather_data_prompt = f"""
+        Please check the weather forecasts for these {selected_state} cities:
+        - {", ".join(selected_cities)}
         
         Analyze which cities are likely to have the best weather for Memorial Day weekend.
         Consider temperature, precipitation chance, and overall conditions.
@@ -121,7 +126,7 @@ with tab1:
         
         {weather_analysis}
         
-        Which California city would you recommend for a visit during Memorial Day weekend?
+        Which {selected_state} city would you recommend for a visit during Memorial Day weekend?
         Please explain your reasoning and provide details about why this location offers the best weather experience.
         Use the analyze_weather_comfort tool to evaluate your top recommendations.
         """
@@ -140,7 +145,7 @@ with tab1:
         Travel Recommendation:
         {travel_recommendation}
         
-        Provide a final summary and recommendation for the best city in California to visit during 
+        Provide a final summary and recommendation for the best city in {selected_state} to visit during 
         Memorial Day weekend {year} based on weather conditions. Include any additional considerations 
         travelers should keep in mind.
         """
@@ -149,7 +154,7 @@ with tab1:
         progress_bar.progress(90)
         
         # Extract recommended city
-        recommended_city = extract_recommended_city(final_recommendation)
+        recommended_city = extract_recommended_city(final_recommendation, cities)
         
         # Display results
         status_text.text("Analysis complete!")
@@ -174,23 +179,19 @@ with tab1:
                 st.code(str(final_recommendation))
             
             st.write("City extraction process:")
-            cities_to_check = [
-                "Palm Springs", "Santa Barbara", "Los Angeles", "San Diego", 
-                "Monterey", "Napa", "San Francisco", "South Lake Tahoe"
-            ]
-            for city in cities_to_check:
+            for city in cities:
                 if city in str(final_recommendation):
                     st.write(f"- Found '{city}' in the recommendation")
         
         # Get current weather for the recommended city
         try:
-            current_weather = get_current_weather(recommended_city)
+            current_weather = get_current_weather(recommended_city, selected_state)
             
             # Create two columns
             col1, col2 = st.columns(2)
             
             with col1:
-                st.subheader(f"Current Weather in {recommended_city}")
+                st.subheader(f"Current Weather in {recommended_city}, {selected_state}")
                 st.write(f"Temperature: {current_weather['temperature']}")
                 st.write(f"Feels Like: {current_weather['feels_like']}")
                 st.write(f"Conditions: {current_weather['conditions']}")
@@ -212,13 +213,19 @@ with tab1:
             st.error(f"Error getting current weather: {str(e)}")
 
 with tab2:
-    st.header("Compare California Cities")
+    st.header("Compare Cities")
+    
+    # State selection for comparison
+    comparison_state = st.selectbox("Select a US State for comparison", all_states, index=all_states.index("California") if "California" in all_states else 0, key="comparison_state")
+    
+    # Get cities for the selected state
+    state_cities = get_cities_by_state(comparison_state)
     
     # Select cities to compare
     cities_to_compare = st.multiselect(
         "Select cities to compare",
-        get_california_cities(),
-        default=["San Francisco", "Los Angeles", "San Diego", "Palm Springs"]
+        state_cities,
+        default=state_cities[:4] if len(state_cities) >= 4 else state_cities
     )
     
     if st.button("Compare Selected Cities"):
@@ -232,11 +239,11 @@ with tab2:
             # Get weather data for each city
             weather_data = {}
             for i, city in enumerate(cities_to_compare):
-                status_text.text(f"Getting weather data for {city}...")
+                status_text.text(f"Getting weather data for {city}, {comparison_state}...")
                 progress_bar.progress((i + 1) / len(cities_to_compare))
                 
                 try:
-                    current = get_current_weather(city)
+                    current = get_current_weather(city, comparison_state)
                     weather_data[city] = {
                         'temperature': float(current['temperature'].replace('°C', '')),
                         'humidity': float(current['humidity'].replace('%', '')),
@@ -296,22 +303,22 @@ with tab2:
 with tab3:
     st.header("About This Application")
     st.markdown("""
-    ## California Weather Travel Planner
+    ## US State Weather Travel Planner
     
-    This application helps you find the best weather in California for Memorial Day weekend using the Strands Agents SDK and OpenWeather API.
+    This application helps you find the best weather in any US state for Memorial Day weekend using the Strands Agents SDK and OpenWeather API.
     
     ### How It Works
     
-    1. **Weather Research Assistant**: Analyzes weather data for major California cities
+    1. **Weather Research Assistant**: Analyzes weather data for major cities in your selected state
     2. **Travel Advisor**: Makes recommendations based on weather conditions
     3. **Coordinator**: Synthesizes information and provides final recommendations
     
     ### Technologies Used
     
     - **Strands Agents SDK**: For creating and managing AI agents
+    - **Amazon Bedrock**: For powering the AI models (Titan and Claude)
     - **OpenWeather API**: For fetching real-time weather data
     - **Streamlit**: For creating the web interface
-    - **Claude AI Models**: For powering the AI agents
     
     ### Created By
     
@@ -320,4 +327,4 @@ with tab3:
 
 # Footer
 st.markdown("---")
-st.markdown("2025 California Weather Travel Planner | Powered by Strands Agents SDK and OpenWeather API")
+st.markdown("© 2025 US State Weather Travel Planner | Powered by Strands Agents SDK, Amazon Bedrock, and OpenWeather API")
