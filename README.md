@@ -2,19 +2,6 @@
 
 A multi-agent application that finds the best weather in any US state for Memorial Day weekend using the Strands Agents SDK, Amazon Bedrock Claude models, and OpenWeather API.
 
-1. Weather Researcher Agent - Uses Claude 3 Haiku model
-   • Specializes in analyzing weather data for different cities
-   • Has access to tools like get_current_weather, get_forecast_weather, and analyze_weather_comfort
-
-2. Travel Advisor Agent - Uses Claude 3 Sonnet model
-   • Recommends cities based on weather conditions
-   • Has access to tools like get_memorial_day_info and analyze_weather_comfort
-
-3. Coordinator Agent - Uses Claude 3 Haiku model
-   • Coordinates between the Weather Researcher and Travel Advisor
-   • Synthesizes information and makes the final recommendation
-
-
 
 ## Overview
 
